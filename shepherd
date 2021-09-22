@@ -27,6 +27,7 @@ update_services() {
   local no_resolve_image_flag=""
   local name
   local apprise_sidecar_url="${APPRISE_SIDECAR_URL:-}"
+  local apprise_notify_urls="${APPRISE_NOTIFY_URL:-}"
 
   [ $supports_detach_option = true ] && detach_option="--detach=false"
   [ $supports_registry_auth = true ] && registry_auth="--with-registry-auth"
@@ -55,7 +56,13 @@ update_services() {
           if [[ "$apprise_sidecar_url" != "" ]]; then
             title="[Shepherd] Service $name updated"
             body="$(date) Service $name was updated from $previousImage to $currentImage"
-            curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\"}" "$apprise_sidecar_url"
+            if [[ "${apprise_notify_urls}" != "" ]]; then
+              # Send notifiy location with request for normal Apprise API
+              curl -X POST -H "Content-Type: application/json" --data "{\"urls\": \"${apprise_notify_urls}\", \"title\": \"$title\", \"body\": \"$body\"}" "$apprise_sidecar_url"
+            else 
+              # Fallback to use the sidecar without the destination data
+              curl -X POST -H "Content-Type: application/json" --data "{\"title\": \"$title\", \"body\": \"$body\"}" "$apprise_sidecar_url"
+            fi
           fi
 
           if [[ "$image_autoclean_limit" != "" ]]; then
