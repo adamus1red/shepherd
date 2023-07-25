@@ -1,4 +1,4 @@
-FROM docker:20.10.8
+FROM docker:24.0.5
 
 ENV SLEEP_TIME='5m'
 ENV FILTER_SERVICES=''
